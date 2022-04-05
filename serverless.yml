@@ -1,0 +1,48 @@
+service: auth-sls
+
+frameworkVersion: '3'
+
+plugins:
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  environment:
+    JWT_KEY: abc123
+
+functions:
+  authorizer:
+    handler: src/authorizer.handler
+  login: 
+    handler: src/login.handler
+    events:
+      - http:
+          path: login
+          method: post
+          cors: true
+  heroes-public: 
+    handler: src/getHeroes.public
+    events: 
+      - http:
+          path: public
+          method: get
+          cors:
+            origins:
+              - '*'
+            headers:
+              - Content-Type
+              - Authorization 
+  heroes-private: 
+    handler: src/getHeroes.private
+    events: 
+      - http:
+          path: private
+          method: get
+          authorizer: authorizer
+          cors:
+            origins:
+              - '*'
+            headers:
+              - Content-Type
+              - Authorization 
